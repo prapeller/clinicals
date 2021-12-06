@@ -1,0 +1,35 @@
+# docker run -d --name pgdb -e POSTGRES_DB=clinicals_db -e POSTGRES_USER=django -e POSTGRES_PASSWORD=superpass -v ~/PycharmProjects/clinicals/postgres_data:/var/lib/postgresql/data -p 5555:5432 postgres
+
+version: '3.9'
+
+services:
+
+  web_app:
+    container_name: web
+#    build: .
+    image: prapeller/clinicals_web
+    restart: always
+    command: >
+      sh -c "python clinicals/manage.py makemigrations
+      && python clinicals/manage.py migrate
+      && python clinicals/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/clinicals
+    ports:
+      - 10555:8000
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    container_name: db
+    environment:
+      - POSTGRES_DB=clinicals_db
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=superpass
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - postgres_data:/var/lib/postgress/data
+
+volumes:
+  postgres_data:
